@@ -23,55 +23,59 @@ namespace
 {
 enum Version
 {
-  // Format Version 0: XOR-based diff + gzip.
+  // Format Version 0: XOR-based diff + ZLib.
   VERSION_V0 = 0,
   VERSION_LATEST = VERSION_V0
 };
 
-bool MakeDiffVersion0(FileReader & oldReader, FileReader & newReader, FileWriter & diffFileWriter, base::Cancellable const & cancellable)
-{
-  try
-  {
-    std::vector<uint8_t> oldData(oldReader.Size());
-    oldReader.Read(0, oldData.data(), oldData.size());
-
-    std::vector<uint8_t> newData(newReader.Size());
-    newReader.Read(0, newData.data(), newData.size());
-
-    std::vector<uint8_t> diffBuf(std::max(oldData.size(), newData.size()));
-    for (size_t i = 0; i < diffBuf.size(); ++i)
+bool MakeDiffVersion0(
+  FileReader & oldReader,
+  FileReader & newReader,
+  FileWriter & diffFileWriter,
+  base::Cancellable const & cancellable
+) {
+    try
     {
-      if (cancellable.IsCancelled())
-      {
-        LOG(LINFO, ("MakeDiffVersion0 cancelled at index", i));
-        return false;
-      }
-      diffBuf[i] = (i < oldData.size() ? oldData[i] : 0) ^ (i < newData.size() ? newData[i] : 0);
+        std::vector<uint8_t> oldData(oldReader.Size());
+        std::vector<uint8_t> newData(newReader.Size());
+        oldReader.Read(0, oldData.data(), oldData.size());
+        newReader.Read(0, newData.data(), newData.size());
+
+        if (cancellable.IsCancelled())
+        {
+            LOG(LINFO, ("MakeDiffVersion0 cancelled after reading data"));
+            return false;
+        }
+
+        std::vector<uint8_t> diffBuf(std::max(oldData.size(), newData.size()));
+        std::transform(oldData.begin(), oldData.end(), newData.begin(), diffBuf.begin(),
+                       [&](uint8_t oldByte, uint8_t newByte) {
+                           return oldByte ^ newByte;
+                       });
+
+        using Deflate = coding::ZLib::Deflate;
+        Deflate deflate(Deflate::Format::ZLib, Deflate::Level::BestCompression);
+        std::vector<uint8_t> deflatedDiffBuf;
+        deflate(diffBuf.data(), diffBuf.size(), back_inserter(deflatedDiffBuf));
+
+        WriteToSink(diffFileWriter, static_cast<uint32_t>(VERSION_V0));
+        diffFileWriter.Write(deflatedDiffBuf.data(), deflatedDiffBuf.size());
+
+        return true;
     }
-
-    using Deflate = coding::ZLib::Deflate;
-    Deflate deflate(Deflate::Format::ZLib, Deflate::Level::BestCompression);
-
-    std::vector<uint8_t> deflatedDiffBuf;
-    deflate(diffBuf.data(), diffBuf.size(), back_inserter(deflatedDiffBuf));
-
-    // A basic header that holds only version.
-    WriteToSink(diffFileWriter, static_cast<uint32_t>(VERSION_V0));
-    diffFileWriter.Write(deflatedDiffBuf.data(), deflatedDiffBuf.size());
-
-    return true;
-  }
-  catch (std::exception const & e)
-  {
-    LOG(LERROR, ("Error during MakeDiffVersion0:", e.what()));
-    return false;
-  }
+    catch (const std::exception& e)
+    {
+        LOG(LERROR, ("Error during MakeDiffVersion0:", e.what()));
+        return false;
+    }
 }
 
 generator::mwm_diff::DiffApplicationResult ApplyDiffVersion0(
-    FileReader & oldReader, FileWriter & newWriter, ReaderSource<FileReader> & diffFileSource,
-    base::Cancellable const & cancellable)
-{
+    FileReader & oldReader,
+    FileWriter & newWriter,
+    ReaderSource<FileReader> & diffFileSource,
+    base::Cancellable const & cancellable
+) {
   using generator::mwm_diff::DiffApplicationResult;
 
   try

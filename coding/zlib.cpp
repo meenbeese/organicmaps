@@ -1,15 +1,15 @@
 #include "coding/zlib.hpp"
-#include <optional>
-#include <span>
+
+#include "std/target_os.hpp"
 
 namespace coding
 {
 namespace
 {
-constexpr int kGzipBits = 16;
-constexpr int kBothBits = 32;
+int constexpr kGzipBits = 16;
+int constexpr kBothBits = 32;
 
-constexpr int ToInt(ZLib::Deflate::Level level)
+int ToInt(ZLib::Deflate::Level level)
 {
   using Level = ZLib::Deflate::Level;
   switch (level)
@@ -21,27 +21,18 @@ constexpr int ToInt(ZLib::Deflate::Level level)
   }
   UNREACHABLE();
 }
-
-template <typename InitFunc>
-std::optional<z_stream> InitStream(InitFunc func)
-{
-  z_stream stream{};
-  stream.zalloc = Z_NULL;
-  stream.zfree = Z_NULL;
-  stream.opaque = Z_NULL;
-
-  if (func(stream) == Z_OK)
-    return stream;
-  return std::nullopt;
-}
 }  // namespace
 
 // ZLib::Processor ---------------------------------------------------------------------------------
-ZLib::Processor::Processor(std::span<const std::byte> data) noexcept : m_init(false)
+ZLib::Processor::Processor(void const * data, size_t size) noexcept : m_init(false)
 {
-  ASSERT(!data.empty(), ());
-  m_stream.next_in = reinterpret_cast<unsigned char const*>(data.data());
-  m_stream.avail_in = static_cast<unsigned int>(data.size());
+  // next_in is defined as z_const (see
+  // http://www.zlib.net/manual.html).  Sometimes it's a const (when
+  // ZLIB_CONST is defined), sometimes not, it depends on the local
+  // zconf.h. So, for portability, const_cast<...> is used here, but
+  // in any case, zlib does not modify |data|.
+  m_stream.next_in = static_cast<unsigned char *>(const_cast<void *>(data));
+  m_stream.avail_in = static_cast<unsigned int>(size);
 
   m_stream.next_out = m_buffer;
   m_stream.avail_out = kBufferSize;
@@ -65,25 +56,20 @@ bool ZLib::Processor::BufferIsFull() const
 
 // ZLib::Deflate -----------------------------------------------------------------------------------
 ZLib::DeflateProcessor::DeflateProcessor(Deflate::Format format, Deflate::Level level,
-                                         std::span<const std::byte> data) noexcept
-  : Processor(data)
+                                         void const * data, size_t size) noexcept
+  : Processor(data, size)
 {
   auto bits = MAX_WBITS;
   switch (format)
   {
   case Deflate::Format::ZLib: break;
-  case Deflate::Format::GZip: bits |= kGzipBits; break;
+  case Deflate::Format::GZip: bits = bits | kGzipBits; break;
   }
 
-  auto maybeStream = InitStream([&](z_stream& stream) {
-    return deflateInit2(&stream, ToInt(level), Z_DEFLATED, bits, 8, Z_DEFAULT_STRATEGY);
-  });
-
-  if (maybeStream)
-  {
-    m_stream = *maybeStream;
-    m_init = true;
-  }
+  int const ret =
+      deflateInit2(&m_stream, ToInt(level) /* level */, Z_DEFLATED /* method */,
+                   bits /* windowBits */, 8 /* memLevel */, Z_DEFAULT_STRATEGY /* strategy */);
+  m_init = (ret == Z_OK);
 }
 
 ZLib::DeflateProcessor::~DeflateProcessor() noexcept
@@ -99,26 +85,19 @@ int ZLib::DeflateProcessor::Process(int flush)
 }
 
 // ZLib::Inflate -----------------------------------------------------------------------------------
-ZLib::InflateProcessor::InflateProcessor(Inflate::Format format, std::span<const std::byte> data) noexcept
-  : Processor(data)
+ZLib::InflateProcessor::InflateProcessor(Inflate::Format format, void const * data,
+                                         size_t size) noexcept
+  : Processor(data, size)
 {
   auto bits = MAX_WBITS;
   switch (format)
   {
   case Inflate::Format::ZLib: break;
-  case Inflate::Format::GZip: bits |= kGzipBits; break;
-  case Inflate::Format::Both: bits |= kBothBits; break;
+  case Inflate::Format::GZip: bits = bits | kGzipBits; break;
+  case Inflate::Format::Both: bits = bits | kBothBits; break;
   }
-
-  auto maybeStream = InitStream([&](z_stream& stream) {
-    return inflateInit2(&stream, bits);
-  });
-
-  if (maybeStream)
-  {
-    m_stream = *maybeStream;
-    m_init = true;
-  }
+  int const ret = inflateInit2(&m_stream, bits);
+  m_init = (ret == Z_OK);
 }
 
 ZLib::InflateProcessor::~InflateProcessor() noexcept
