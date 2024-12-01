@@ -9,14 +9,13 @@ import urllib.error
 import urllib.parse
 from multiprocessing.pool import ThreadPool
 
-import htmlmin
 import requests
 import wikipediaapi
 from bs4 import BeautifulSoup
 from wikidata.client import Client
 
-from exceptions import GettingError
-from exceptions import ParseError
+from tools.python.descriptions.exceptions import GettingError
+from tools.python.descriptions.exceptions import ParseError
 
 """
 This script downloads Wikipedia pages for different languages.
@@ -70,9 +69,9 @@ def try_get(obj, prop, *args, **kwargs):
             is_method = isinstance(attr, types.MethodType)
             return attr(*args, **kwargs) if is_method else attr
         except (
-            requests.exceptions.ConnectionError,
-            requests.exceptions.ReadTimeout,
-            json.decoder.JSONDecodeError,
+                requests.exceptions.ConnectionError,
+                requests.exceptions.ReadTimeout,
+                json.decoder.JSONDecodeError,
         ):
             time.sleep(random.uniform(0.0, 1.0 / 1000.0 * ATTEMPTS_PAUSE_MS))
             attempts -= 1
@@ -140,7 +139,7 @@ def beautify_page(html, lang):
             x.extract()
     soup = remove_bad_sections(soup, lang)
     html = str(soup.prettify())
-    html = htmlmin.minify(html, remove_empty_space=True)
+    html = " ".join(html.split())
     return html
 
 

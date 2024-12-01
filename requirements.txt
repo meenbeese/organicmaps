@@ -24,6 +24,5 @@ beautifulsoup4~=4.13.0b2
 requests-file~=2.1.0
 filelock~=3.16.0
 Wikipedia-API~=0.7.1
-htmlmin~=0.1.12
 Wikidata~=0.8.1
 webdav~=1.1.7
