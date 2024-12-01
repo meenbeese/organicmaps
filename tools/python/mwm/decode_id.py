@@ -1,7 +1,7 @@
 import re
 
-from mwm.ft2osm import OsmIdCode
-from mwm.ft2osm import unpack_osmid
+from ft2osm import OsmIdCode
+from ft2osm import unpack_osmid
 
 
 def decode_id(id):

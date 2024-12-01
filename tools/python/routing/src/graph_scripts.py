@@ -1,4 +1,4 @@
-from src.logger import LOG
+from logger import LOG
 
 def create_string_array(values):
     return f"[{','.join(str(x) for x in values)}]"

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 #coding: utf8
-from __future__ import print_function
 
 from argparse import ArgumentParser
 from collections import defaultdict

@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -*-
 import csv
 import os
+import sys
+import importlib
 
 import drules_struct_pb2
 from webcolors.webcolors import hex_to_color_name
 from operator import *
 from copy import *
 
-import sys
-reload(sys)
-sys.setdefaultencoding("utf-8")
+importlib.reload(sys)
 
 DATADIR = "../../../data"
 files = {

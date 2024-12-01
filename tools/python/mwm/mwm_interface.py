@@ -6,8 +6,10 @@ from typing import Dict
 from typing import Iterable
 from typing import List
 from typing import Union
+from collections.abc import Iterable
+from collections.abc import AB
 
-from mwm.feature_types import readable_type
+from feature_types import readable_type
 
 # See coding/string_utf8_multilang.cpp to synchronize languages.
 LANGS = (

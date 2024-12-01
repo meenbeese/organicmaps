@@ -2,16 +2,12 @@
 import os
 import sys
 import tarfile
+import lzma
 from distutils import log
 from distutils.command.build import build
 from distutils.command.clean import clean
 
 from six import BytesIO
-
-try:
-    import lzma
-except ImportError:
-    from backports import lzma
 
 
 module_dir = os.path.abspath(os.path.dirname(__file__))

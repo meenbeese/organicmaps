@@ -5,8 +5,8 @@ import json
 
 from git import Repo
 
-from src.logger import LOG
-from src.common_config import CommonConfig
+from logger import LOG
+from common_config import CommonConfig
 
 
 def load_run_config_ini(*, config_ini, path):

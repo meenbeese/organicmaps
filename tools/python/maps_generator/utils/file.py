@@ -13,14 +13,12 @@ from typing import Optional
 from urllib.parse import unquote
 from urllib.parse import urljoin
 from urllib.parse import urlparse
-from urllib.request import url2pathname
 
 import requests
 from bs4 import BeautifulSoup
-from requests_file import FileAdapter
-
 from maps_generator.utils.md5 import check_md5
 from maps_generator.utils.md5 import md5_ext
+from requests_file import FileAdapter
 
 logger = logging.getLogger("maps_generator")
 

@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os, sys, json
+import os
+import sys
+import json
 from threading import Thread
-try:
-  from urllib2 import urlopen
-  from Queue import Queue
-except ImportError:
-  from urllib.request import urlopen
-  from queue import Queue
+from urllib.request import urlopen
+from queue import Queue
 
 '''
 World road map generation script.
@@ -94,7 +92,7 @@ capitals_list = set()
 towns_list = set()
 
 for i in range(WORKERS):
-    t=Thread(target=parallel_worker, args=(qtasks, capitals_list, towns_list))
+    t = Thread(target=parallel_worker, args=(qtasks, capitals_list, towns_list))
     t.daemon = True
     t.start()
 
@@ -102,7 +100,7 @@ for task in tasks:
     qtasks.put(task)
 qtasks.join()
 
-with open(os.path.join(sys.argv[1], "ways.csv"),"w") as f:
+with open(os.path.join(sys.argv[1], "ways.csv"), "w") as f:
     for way_id in capitals_list:
         f.write("{0};world_level\n".format(way_id))
     for way_id in towns_list:

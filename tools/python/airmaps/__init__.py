@@ -1,6 +1,6 @@
 import os
 
-from airmaps.instruments import settings
+from instruments import settings
 
 CONFIG_PATH = os.path.join(
     os.path.dirname(os.path.join(os.path.realpath(__file__))),

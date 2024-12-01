@@ -15,7 +15,6 @@
 
 import base64
 import hashlib
-import json
 import os.path
 import re
 

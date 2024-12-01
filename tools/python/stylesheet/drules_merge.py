@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 # Compares two drules files and produces a merged result.
 # Also prints differences (missing things in drules1) to stdout.
-import sys, re
-import copy, collections
+import collections
+import copy
+import sys
+
 import drules_struct_pb2
+
 
 def read_drules(drules):
   """Parses the structure and extracts elements for lowest and highest zooms

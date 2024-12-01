@@ -1,5 +1,5 @@
-from mwm.mwm_python import read_uint
-from mwm.mwm_python import read_varuint
+from mwm_python import read_uint
+from mwm_python import read_varuint
 
 
 class OsmIdCode:

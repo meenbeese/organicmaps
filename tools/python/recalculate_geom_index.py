@@ -8,7 +8,7 @@ Uses generator_tool for index calculation. After all it runs designer_tool if ha
 import os
 import subprocess
 import sys
-from Queue import Queue, Empty
+from queue import Queue, Empty
 from threading import Thread
 
 WORKERS = 8

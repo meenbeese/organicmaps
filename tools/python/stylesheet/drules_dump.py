@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # Dumps hashes of protobuffed drules
-import sys, re
+import re
+import sys
 import itertools
 import drules_struct_pb2
 

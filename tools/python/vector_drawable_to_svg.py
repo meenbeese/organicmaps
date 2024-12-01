@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from xml.dom.minidom import parse, parseString
 import sys
+from xml.dom.minidom import parse
 
 
 def renameAttr(tag, old, new):

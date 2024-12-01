@@ -5,10 +5,10 @@ import os
 
 import wikipediaapi
 
-from descriptions.descriptions_downloader import check_and_get_checker
-from descriptions.descriptions_downloader import download_from_wikidata_tags
-from descriptions.descriptions_downloader import download_from_wikipedia_tags
-from descriptions.descriptions_downloader import log
+from descriptions_downloader import check_and_get_checker
+from descriptions_downloader import download_from_wikidata_tags
+from descriptions_downloader import download_from_wikipedia_tags
+from descriptions_downloader import log
 
 
 def parse_args():

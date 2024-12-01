@@ -26,9 +26,6 @@ same name as ours. If we don't someone else will kill us.
 """
 
 
-
-from __future__ import print_function
-
 from http.server import BaseHTTPRequestHandler
 from http.server import HTTPServer
 from ResponseProvider import Payload

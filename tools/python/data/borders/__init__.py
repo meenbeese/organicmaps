@@ -1,15 +1,12 @@
 import logging
 import os
 import tarfile
+import lzma
 
 from six import BytesIO
 
 from data_files import find_data_files
 
-try:
-    import lzma
-except ImportError:
-    from backports import lzma
 
 logger = logging.getLogger(__name__)
 

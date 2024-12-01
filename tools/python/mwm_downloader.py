@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
 
 import argparse
-import itertools
 import json
 import logging
 import os
-import re
 import random
+import re
 import socket
 import sys
 import time
-import urllib.request
-import urllib.parse
 import urllib.error
-
+import urllib.parse
+import urllib.request
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-
 
 ROOT = Path(__file__).parent.absolute()
 OMIM_ROOT = ROOT / '..' / '..'

@@ -1,7 +1,6 @@
 import argparse
 import multiprocessing
 import os
-import site
 import sys
 from configparser import ConfigParser
 from configparser import ExtendedInterpolation

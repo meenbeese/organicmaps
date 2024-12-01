@@ -1,7 +1,8 @@
-import sys, os, math
-import matplotlib.pyplot as plt
+import math
+import sys
 from optparse import OptionParser
 
+import matplotlib.pyplot as plt
 
 cities = []
 

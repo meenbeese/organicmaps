@@ -2,7 +2,7 @@ import argparse
 from multiprocessing.pool import ThreadPool
 from typing import Tuple
 
-from maps_generator.checks.logs import logs_reader
+from checks.logs import logs_reader
 
 
 def get_args():

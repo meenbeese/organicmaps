@@ -1,7 +1,7 @@
 import multiprocessing
 import os
 
-from mwm.find_feature import find_features
+from find_feature import find_features
 
 
 def compare_feature_num(old_mwm, new_mwm, type_name, threshold):

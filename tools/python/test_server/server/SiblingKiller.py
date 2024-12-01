@@ -1,18 +1,13 @@
-from __future__ import print_function
-
 import logging
-
 import os
 import re
-from urllib.error import URLError
-from urllib.request import urlopen
 import socket
+import sys
 from subprocess import Popen, PIPE
 from time import sleep
-import sys
+from urllib.error import URLError
+from urllib.request import urlopen
 
-
-import logging
 
 class SiblingKiller:
     

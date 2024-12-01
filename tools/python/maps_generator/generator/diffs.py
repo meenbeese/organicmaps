@@ -1,7 +1,6 @@
+import subprocess
 from pathlib import Path
 
-import subprocess
-import warnings
 
 class Status:
     NO_NEW_VERSION = "Failed: new version doesn't exist: {new}"

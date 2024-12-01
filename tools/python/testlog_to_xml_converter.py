@@ -9,7 +9,6 @@ Created on May 13, 2015
 @author: t.danshin
 '''
 
-from __future__ import print_function
 import sys
 import xml.etree.ElementTree as ElementTree
 from optparse import OptionParser

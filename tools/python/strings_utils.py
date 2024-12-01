@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
+import re
 from argparse import ArgumentParser
 from collections import namedtuple, defaultdict
 from itertools import combinations
-from os.path import join, dirname, abspath, isabs
-import re
-from sys import argv
+from os.path import abspath
 
 
 class StringsTxt:

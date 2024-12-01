@@ -2,11 +2,11 @@ import argparse
 import logging
 import sys
 
-from mwm.decode_id import decode_id
-from mwm.dump_mwm import dump_mwm
-from mwm.find_feature import find_and_print_features
-from mwm.ft2osm import ft2osm
-from mwm.mwm_feature_compare import compare_mwm
+from decode_id import decode_id
+from dump_mwm import dump_mwm
+from find_feature import find_and_print_features
+from ft2osm import ft2osm
+from mwm_feature_compare import compare_mwm
 
 logger = logging.getLogger("mwm")
 logger.setLevel(logging.ERROR)

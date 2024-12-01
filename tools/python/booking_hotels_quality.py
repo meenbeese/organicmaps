@@ -1,20 +1,12 @@
 #!/usr/bin/env python3
 # coding: utf8
-from __future__ import print_function
 
-from collections import namedtuple, defaultdict
-from datetime import datetime
-from sklearn import metrics
 import argparse
-import base64
-import json
 import logging
-import matplotlib.pyplot as plt
-import os
-import pickle
-import time
-import urllib2
 import re
+
+import matplotlib.pyplot as plt
+from sklearn import metrics
 
 # init logging
 logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s] %(levelname)s: %(message)s')
