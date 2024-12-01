@@ -1,23 +1,23 @@
-import sys, os, math
+#!/usr/bin/env python3
+import sys
+import math
 import matplotlib.pyplot as plt
 from optparse import OptionParser
 
-
 cities = []
+
 
 def strip(s):
     return s.strip('\t\n ')
 
+
 def load_data(path):
-    
     global cities
 
-    f = open(path, 'r')
-    lines = f.readlines()
-    f.close();
+    with open(path, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
 
     for l in lines:
-
         if l.startswith('#'):
             continue
 
@@ -26,53 +26,47 @@ def load_data(path):
         if len(data) < 6:
             continue
 
-        item = {}
-
-        item['name'] = strip(data[0])
-        item['population'] = int(strip(data[1]))
-        item['region'] = strip(data[2])
-        item['width'] = float(strip(data[3]))
-        item['height'] = float(strip(data[4]))
-
-        item['square'] = float(data[5])
+        item = {
+            'name': strip(data[0]),
+            'population': int(strip(data[1])),
+            'region': strip(data[2]),
+            'width': float(strip(data[3])),
+            'height': float(strip(data[4])),
+            'square': float(data[5])
+        }
 
         cities.append(item)
 
     # build plot
-    print "Cities count: %d" % len(cities)
+    print("Cities count: {}".format(len(cities)))
 
-def formula(popul, base = 32, mult = 0.5):
-    #return math.exp(math.log(popul, base)) * mult
+
+def formula(popul, base=32, mult=0.5):
     return math.pow(popul, 1 / base) * mult
 
+
 def avgDistance(approx, data):
-    dist = 0
-    for x in xrange(len(data)):
-        dist += math.fabs(approx[x] - data[x])
-    return dist / float(len(data))  
+    dist = sum(abs(approx[i] - data[i]) for i in range(len(data)))
+    return dist / float(len(data))
 
-def findBest(popul, data, minBase = 5, maxBase = 100, stepBase = 0.1, minMult = 0.01, maxMult = 1, stepMult = 0.01):
 
-    # try to find best parameters
+def findBest(popul, data, minBase=5, maxBase=100, stepBase=0.1, minMult=0.01, maxMult=1, stepMult=0.01):
     base = minBase
-
-    minDist = -1
+    minDist = float('inf')
     bestMult = minMult
     bestBase = base
 
     while base <= maxBase:
-        print "%.02f%% best mult: %f, best base: %f, best dist: %f" % (100 * (base - minBase) / (maxBase - minBase), bestMult, bestBase, minDist)
+        print("{:.02f}% best mult: {:.6f}, best base: {:.6f}, best dist: {:.6f}".format(
+            100 * (base - minBase) / (maxBase - minBase), bestMult, bestBase, minDist))
+
         mult = minMult
-        
+
         while mult <= maxMult:
-            approx = []
-
-            for p in popul:
-                approx.append(formula(p, base, mult))
-
+            approx = [formula(p, base, mult) for p in popul]
             dist = avgDistance(approx, data)
 
-            if minDist < 0 or minDist > dist:
+            if dist < minDist:
                 minDist = dist
                 bestBase = base
                 bestMult = mult
@@ -81,48 +75,45 @@ def findBest(popul, data, minBase = 5, maxBase = 100, stepBase = 0.1, minMult = 
 
         base += stepBase
 
-    return (bestBase, bestMult)
+    return bestBase, bestMult
 
-def process_data(steps_count, base, mult, bestFind = False, dataFlag = 0):
+
+def process_data(steps_count, base, mult, bestFind=False, dataFlag=0):
     avgData = []
     maxData = []
     sqrData = []
     population = []
     maxPopulation = 0
-    minPopulation = -1
+    minPopulation = float('inf')
+
     for city in cities:
         p = city['population']
         w = city['width']
         h = city['height']
         s = city['square']
         population.append(p)
-        if p > maxPopulation:
-            maxPopulation = p
-        if minPopulation < 0 or p < minPopulation:
-            minPopulation = p
+
+        maxPopulation = max(maxPopulation, p)
+        minPopulation = min(minPopulation, p)
 
         maxData.append(max([w, h]))
         avgData.append((w + h) * 0.5)
         sqrData.append(math.sqrt(s))
 
+    bestBase, bestMult = base, mult
 
-    bestBase = base
-    bestMult = mult
     if bestFind:
-        d = maxData
-        if dataFlag == 1:
-            d = avgData
-        elif dataFlag == 2:
-            d = sqrData
+        d = maxData if dataFlag == 0 else avgData if dataFlag == 1 else sqrData
         bestBase, bestMult = findBest(population, d)
 
-    print "Finished\n\nBest mult: %f, Best base: %f" % (bestMult, bestBase)
+    print("\nFinished\nBest mult: {:.6f}, Best base: {:.6f}".format(bestMult, bestBase))
 
     approx = []
     population2 = []
-    v = minPopulation
     step = (maxPopulation - minPopulation) / float(steps_count)
-    for i in xrange(0, steps_count):
+    v = minPopulation
+
+    for _ in range(steps_count):
         approx.append(formula(v, bestBase, bestMult))
         population2.append(v)
         v += step
@@ -132,26 +123,18 @@ def process_data(steps_count, base, mult, bestFind = False, dataFlag = 0):
     plt.xscale('log')
     plt.show()
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print 'city_radius.py <data_file> <steps>'
-    
+        print('Usage: city_radius.py <data_file> <steps>')
+        sys.exit(1)
+
     parser = OptionParser()
-    parser.add_option("-f", "--file", dest="filename", default="city_popul_sqr.data",
-                    help="source data file", metavar="path")
-    parser.add_option("-s", "--scan",
-                    dest="best", default=False, action="store_true",
-                    help="scan best values of mult and base")
-    parser.add_option('-m', "--mult",
-                    dest='mult', default=1,
-                    help='multiplier value')
-    parser.add_option('-b', '--base',
-                    dest='base', default=3.6,
-                    help="base value")
-    parser.add_option('-d', '--data', 
-                    default=0, dest='data',
-                    help="Dataset to use on best values scan: 0 - max, 1 - avg, 2 - sqr")
+    parser.add_option("-f", "--file", dest="filename", default="city_popul_sqr.data", help="source data file")
+    parser.add_option("-s", "--scan", dest="best", default=False, action="store_true", help="scan best values of mult and base")
+    parser.add_option('-m', "--mult", dest='mult', default=1, help='multiplier value', type='float')
+    parser.add_option('-b', '--base', dest='base', default=3.6, help="base value", type='float')
+    parser.add_option('-d', '--data', default=0, dest='data', help="Dataset to use on best values scan: 0 - max, 1 - avg, 2 - sqr", type='int')
 
     (options, args) = parser.parse_args()
     load_data(options.filename)

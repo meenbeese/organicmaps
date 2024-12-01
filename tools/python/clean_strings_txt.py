@@ -31,7 +31,7 @@ ANDROID_JAVA_RE = re.compile(r'R\.string\.([\w_]*)')
 ANDROID_JAVA_PLURAL_RE = re.compile(r'R\.plurals\.([\w_]*)')
 ANDROID_XML_RE = re.compile(r'@string/(.*?)\W')
 
-IOS_CANDIDATES_RE = re.compile(r'(.*?):[^L\(]@"([a-z0-9_]*?)"')
+IOS_CANDIDATES_RE = re.compile(r'(.*?):[^L(]@"([a-z0-9_]*?)"')
 
 HARDCODED_CATEGORIES = []
 

@@ -1,112 +1,128 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os, sys, json
+import os
+import sys
+import json
 from threading import Thread
-try:
-  from urllib2 import urlopen
-  from Queue import Queue
-except ImportError:
-  from urllib.request import urlopen
-  from queue import Queue
+from queue import Queue
+from urllib.request import urlopen
 
 '''
 World road map generation script.
 It takes city points from omim intermediate data and calculates roads between them.
-After all, it stores road features OSM way ids into csv text file.
+Afterwards, it stores road features OSM way IDs into a CSV text file.
 '''
 
-road_delta = 200
+ROAD_DELTA = 200
 WORKERS = 16
 
+
 def get_way_ids(point1, point2, server):
-    url = "http://{0}/wayid?z=18&loc={1},{2}&loc={3},{4}".format(server, point1[0], point1[1], point2[0], point2[1])
-    request = urlopen(url)
-    data = json.load(request)
-    if "way_ids" in data:
-        return data["way_ids"]
-    return []
+    url = f"http://{server}/wayid?z=18&loc={point1[0]},{point1[1]}&loc={point2[0]},{point2[1]}"
+    try:
+        with urlopen(url) as response:
+            data = json.load(response)
+            return data.get("way_ids", [])
+    except Exception as e:
+        print(f"Failed to fetch way IDs for {point1}, {point2}: {e}")
+        return []
+
 
 def each_to_each(points):
     result = []
     for i in range(len(points)):
-        for j in range(len(points) - i - 1):
-            result.append((points[i], points[j + i + 1]))
+        for j in range(i + 1, len(points)):
+            result.append((points[i], points[j]))
     return result
+
 
 def load_towns(path):
-    result = []
+    towns = []
     if not os.path.isfile(path):
         print("WARNING! File with towns not found!")
-        return result
+        return towns
+
     with open(path, "r") as f:
         for line in f:
-            data = line.split(";")
-            isCapital = (data[3][0] == "t")
-            result.append((float(data[0]), float(data[1]), isCapital))
-    return result
+            data = line.strip().split(";")
+            is_capital = data[3].lower() == "t"
+            towns.append((float(data[0]), float(data[1]), is_capital))
+    return towns
 
-def parallel_worker(tasks, capitals_list, towns_list):
+
+def parallel_worker(tasks, capitals_list, towns_list, server):
+    """Thread worker function to process tasks in parallel."""
     while True:
-        if not tasks.qsize() % 1000:
-           print(tasks.qsize())
         task = tasks.get()
-        ids = get_way_ids(task[0], task[1], sys.argv[2])
-        for id in ids:
-            if task[0][2] and task[1][2]:
-                capitals_list.add(id)
+        if tasks.qsize() % 1000 == 0:
+            print(f"Tasks remaining: {tasks.qsize()}")
+
+        way_ids = get_way_ids(task[0], task[1], server)
+        for way_id in way_ids:
+            if task[0][2] and task[1][2]:  # Both are capitals
+                capitals_list.add(way_id)
             else:
-                towns_list.add(id)
+                towns_list.add(way_id)
         tasks.task_done()
 
-if len(sys.argv) < 3:
-    print("road_runner.py <intermediate_dir> <osrm_addr>")
-    exit(1)
 
-if not os.path.isdir(sys.argv[1]):
-    print("{0} is not a directory!".format(sys.argv[1]))
-    exit(1)
+def main():
+    if len(sys.argv) < 3:
+        print("Usage: road_runner.py <intermediate_dir> <osrm_addr>")
+        sys.exit(1)
 
-towns = load_towns(os.path.join(sys.argv[1], "towns.csv"))
-print("Have {0} towns".format(len(towns)))
+    intermediate_dir = sys.argv[1]
+    server_addr = sys.argv[2]
 
-tasks = each_to_each(towns)
-filtered = []
-for p1, p2 in tasks:
-    if p1[2] and p2[2]:
-        filtered.append((p1,p2))
-    elif (p1[0]-p2[0])**2 + (p1[1]-p2[1])**2 < road_delta:
-        filtered.append((p1,p2))
-tasks = filtered
+    if not os.path.isdir(intermediate_dir):
+        print(f"{intermediate_dir} is not a directory!")
+        sys.exit(1)
 
-if not len(tasks):
-    print("Towns not found. No job.")
-    exit(1)
+    towns = load_towns(os.path.join(intermediate_dir, "towns.csv"))
+    print(f"Loaded {len(towns)} towns.")
 
-try:
-    get_way_ids(tasks[0][0], tasks[0][1], sys.argv[2])
-except:
-    print("Can't connect to remote server: {0}".format(sys.argv[2]))
-    exit(1)
+    if not towns:
+        print("No towns found. Exiting.")
+        sys.exit(1)
 
-qtasks = Queue()
-capitals_list = set()
-towns_list = set()
+    tasks = each_to_each(towns)
+    filtered_tasks = [(p1, p2) for p1, p2 in tasks if
+                      p1[2] and p2[2] or (p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2 < ROAD_DELTA]
 
-for i in range(WORKERS):
-    t=Thread(target=parallel_worker, args=(qtasks, capitals_list, towns_list))
-    t.daemon = True
-    t.start()
+    if not filtered_tasks:
+        print("No valid tasks to process. Exiting.")
+        sys.exit(1)
 
-for task in tasks:
-    qtasks.put(task)
-qtasks.join()
+    try:
+        get_way_ids(filtered_tasks[0][0], filtered_tasks[0][1], server_addr)
+    except Exception as e:
+        print(f"Unable to connect to the server: {server_addr}\nError: {e}")
+        sys.exit(1)
 
-with open(os.path.join(sys.argv[1], "ways.csv"),"w") as f:
-    for way_id in capitals_list:
-        f.write("{0};world_level\n".format(way_id))
-    for way_id in towns_list:
-        if way_id not in capitals_list:
-            f.write("{0};world_towns_level\n".format(way_id))
+    qtasks = Queue()
+    capitals_list = set()
+    towns_list = set()
 
-print("All done.")
+    for _ in range(WORKERS):
+        t = Thread(target=parallel_worker, args=(qtasks, capitals_list, towns_list, server_addr))
+        t.daemon = True
+        t.start()
+
+    for task in filtered_tasks:
+        qtasks.put(task)
+
+    qtasks.join()
+
+    with open(os.path.join(intermediate_dir, "ways.csv"), "w") as f:
+        for way_id in capitals_list:
+            f.write(f"{way_id};world_level\n")
+        for way_id in towns_list:
+            if way_id not in capitals_list:
+                f.write(f"{way_id};world_towns_level\n")
+
+    print("Processing complete.")
+
+
+if __name__ == "__main__":
+    main()

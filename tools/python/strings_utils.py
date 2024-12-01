@@ -3,9 +3,8 @@
 from argparse import ArgumentParser
 from collections import namedtuple, defaultdict
 from itertools import combinations
-from os.path import join, dirname, abspath, isabs
+from os.path import abspath
 import re
-from sys import argv
 
 
 class StringsTxt:
@@ -13,8 +12,8 @@ class StringsTxt:
     STRINGS_TXT_PATH = "data/strings/strings.txt"
     TYPES_STRINGS_TXT_PATH = "data/strings/types_strings.txt"
 
-    SECTION = re.compile(r"\[\[\w+.*\]\]")
-    DEFINITION = re.compile(r"\[\w+.*\]")
+    SECTION = re.compile(r"\[\[\w+.*]]")
+    DEFINITION = re.compile(r"\[\w+.*]")
     LANG_KEY = re.compile(r"^[a-z]{2}(-[a-zA-Z]{2,4})?(:[a-z]+)?$")
     TRANSLATION = re.compile(r"^\s*\S+\s*=\s*\S+.*$", re.S | re.MULTILINE)
     MANY_DOTS = re.compile(r"\.{4,}")
@@ -27,14 +26,14 @@ class StringsTxt:
     TransAndKey = namedtuple("TransAndKey", "translation, key")
 
     def __init__(self, strings_path):
+        self.most_duplicated = None
+        self.similarity_indices = None
         self.strings_path = strings_path
 
         # dict<key, dict<lang, translation>>
         self.translations = defaultdict(lambda: defaultdict(str))
-        self.translations_by_language = defaultdict(
-            dict)  # dict<lang, dict<key, translation>>
-        self.comments_tags_refs = defaultdict(
-            dict)  # dict<key, dict<key, value>>
+        self.translations_by_language = defaultdict(dict)  # dict<lang, dict<key, translation>>
+        self.comments_tags_refs = defaultdict(dict)  # dict<key, dict<key, value>>
         self.all_langs = set()  # including plural keys, e.g. en:few
         self.langs = set()  # without plural keys
         self.duplicates = {}  # dict<lang, TransAndKey>
@@ -234,7 +233,7 @@ class StringsTxt:
         if self.MANY_DOTS.search(trans):
             self._print_validation_issue(
                 "4 or more dots in the string: {0}".format(line), warning=True)
-        return (lang.strip(), trans.strip())
+        return lang.strip(), trans.strip()
 
     def _resolve_references(self):
         resolved = set()

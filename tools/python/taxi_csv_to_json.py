@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-# coding: utf8
+# coding: utf-8
 
 from argparse import ArgumentParser
 from collections import defaultdict
-
 import json
 import logging
+import sys
 
 
 def deserialize_places(src):
@@ -20,8 +20,8 @@ def deserialize_places(src):
             cells = l.split('\t')
 
             if len(cells) < 5 and not cells[0]:
-                logging.error("Country cell is empty. Incorrect line: {}".format(cells))
-                exit()
+                logging.error(f"Country cell is empty. Incorrect line: {cells}")
+                sys.exit(1)
 
             # Add full country.
             if len(cells) < 3:
@@ -33,18 +33,18 @@ def deserialize_places(src):
             elif len(cells) >= 5:
                 mwms.append(cells[4])
     except IndexError as e:
-        logging.error("The structure of src file is incorrect. Exception: {}".format(e))
-        exit()
+        logging.error(f"The structure of src file is incorrect. Exception: {e}")
+        sys.exit(1)
 
     return countries, mwms
 
 
 def convert(src_path, dst_path):
     try:
-        with open(src_path, "r") as f:
+        with open(src_path, "r", encoding='utf-8') as f:
             src = f.read()
-    except (OSError, IOError):
-        logging.error("Cannot read src file {}".format(src_path))
+    except (OSError, IOError) as e:
+        logging.error(f"Cannot read src file {src_path}. Error: {e}")
         return
 
     countries, mwms = deserialize_places(src)
@@ -55,7 +55,7 @@ def convert(src_path, dst_path):
         "disabled": {"countries": [], "mwms": []}
     }
 
-    for country, cities in countries.iteritems():
+    for country, cities in countries.items():
         result["enabled"]["countries"].append({
             "id": country,
             "cities": cities
@@ -64,26 +64,20 @@ def convert(src_path, dst_path):
     result["enabled"]["mwms"] = mwms
 
     try:
-        with open(dst_path, "w") as f:
+        with open(dst_path, "w", encoding='utf-8') as f:
             json.dump(result, f, indent=2, sort_keys=True)
-    except (OSError, IOError):
-        logging.error("Cannot write result into dst file {}".format(dst_path))
+    except (OSError, IOError) as e:
+        logging.error(f"Cannot write result into dst file {dst_path}. Error: {e}")
         return
 
 
 def process_options():
-    parser = ArgumentParser(description='Load taxi file in csv format and convert it into json')
+    parser = ArgumentParser(description='Load taxi file in CSV format and convert it into JSON')
 
-    parser.add_argument("--src", type=str, dest="src", help="Path to csv file", required=True)
-    parser.add_argument("--dst", type=str, dest="dst", help="Path to json file", required=True)
+    parser.add_argument("--src", type=str, dest="src", help="Path to the CSV file", required=True)
+    parser.add_argument("--dst", type=str, dest="dst", help="Path to the JSON file", required=True)
 
-    options = parser.parse_args()
-
-    if not options.src or not options.dst:
-        parser.print_help()
-        return None
-
-    return options
+    return parser.parse_args()
 
 
 def main():

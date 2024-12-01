@@ -26,7 +26,7 @@ if __name__ == "__main__":
         print('Converts Android XML icons into SVG and prints it')
         print(
             f"Usage: {sys.argv[0]} <Android vector drawable xml icon>", file=sys.stderr)
-        exit(1)
+        sys.exit(1)
     xml = parse(sys.argv[1])
     svg = xml.documentElement
     svg.tagName = 'svg'
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     svg.removeAttribute('android:viewportWidth')
     vh = svg.getAttribute('android:viewportHeight')
     svg.removeAttribute('android:viewportHeight')
-    svg.setAttribute('viewbox', f"0 0 {vw} {vh}")
+    svg.setAttribute('viewBox', f"0 0 {vw} {vh}")
 
     svg.removeAttribute('android:width')
     svg.removeAttribute('android:height')

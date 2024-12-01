@@ -106,9 +106,9 @@ GOOGLE_TARGET_LANGUAGES.sort()
 
 def get_api_key():
   key = os.environ.get('DEEPL_FREE_API_KEY')
-  if key == None:
+  if key is None:
     key = os.environ.get('DEEPL_API_KEY')
-  if key == None:
+  if key is None:
     print('Error: DEEPL_FREE_API_KEY or DEEPL_API_KEY env variables are not set')
     exit(1)
   return key
@@ -131,12 +131,11 @@ def google_translate(text, source_language):
   i = 0
   for line in res.stdout.splitlines():
     lang = GOOGLE_TARGET_LANGUAGES[i]
-    if lang == 'zh-TW':
-      lang = 'zh-Hant'
-    elif lang == 'pt-PT':
-      lang = 'pt'
-    elif lang == 'zh-CN' or lang == 'zh':
-      lang = 'zh-Hans'
+    match lang:
+      case 'zh-TW': lang = 'zh-Hant'
+      case 'pt-PT': lang = 'pt'
+      case 'zh-CN': lang = 'zh-Hans'
+      case 'zh': lang = 'zh'
     translations[lang] = line
     i = i + 1
     print(lang + ' = ' + line)
@@ -230,7 +229,7 @@ if __name__ == '__main__':
     print('and get the API key here: https://www.deepl.com/account/summary')
     exit(1)
 
-  if shutil.which(TRANS_CMD) == None:
+  if shutil.which(TRANS_CMD) is None:
     print('Error: translate-shell program for Google Translate is not installed.')
     if platform.system() == 'Darwin':
         print('Install it using `brew install translate-shell`')

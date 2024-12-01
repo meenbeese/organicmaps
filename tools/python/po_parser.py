@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 #coding: utf8
-from __future__ import print_function
-
 from argparse import ArgumentParser
 from categories_converter import CategoriesTxt
 from collections import defaultdict
@@ -26,9 +24,9 @@ class PoParser:
         self.folder_path = args.folder
         self.all_po_files = self.find_all_po_files()
 
-        if (args.strings_txt):
+        if args.strings_txt:
             self.dest_file = StringsTxt(args.strings_txt)
-        elif (args.categories_txt):
+        elif args.categories_txt:
             self.dest_file = CategoriesTxt(args.categories_txt)
         else:
             raise RuntimeError("You must specify either -s or -c")

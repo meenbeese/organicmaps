@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 
-'''
+"""
 This script generates jUnit-style xml files from the log written by our tests.
 This xml file is used in Jenkins to show the state of the test execution.
 
 Created on May 13, 2015
 
 @author: t.danshin
-'''
+"""
 
-from __future__ import print_function
 import sys
 import xml.etree.ElementTree as ElementTree
 from optparse import OptionParser
