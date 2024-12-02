@@ -7,7 +7,7 @@ from pygen import classif
 from pygen import geometry
 from pygen import mwm
 
-from mwm import mwm_interface as mi
+from tools.python.mwm import mwm_interface as mi
 
 
 def init(resource_path):

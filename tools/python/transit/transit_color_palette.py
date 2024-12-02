@@ -2,11 +2,11 @@ import math
 
 def to_rgb(color_str):
     if len(color_str) != 6:
-        return (0, 0, 0)
+        return 0, 0, 0
     r = int(color_str[0:2], 16)
     g = int(color_str[2:4], 16)
     b = int(color_str[4:], 16)
-    return (r, g, b)
+    return r, g, b
 
 
 def blend_colors(rgb_array1, rgb_array2, k):
@@ -19,7 +19,7 @@ def rgb_pivot(n):
     result = n / 12.92
     if n > 0.04045:
         result = ((n + 0.055) / 1.055) ** 2.4
-    return result * 100.0;
+    return result * 100.0
 
 
 def to_xyz(rgb_array):
@@ -48,7 +48,7 @@ def to_lab(rgb_array):
         l = 0.0
     a = 500.0 * (x - y)
     b = 200.0 * (y - z)
-    return (l, a, b)
+    return l, a, b
 
 
 def lum_distance(ref_color, src_color):
@@ -106,7 +106,7 @@ class Palette:
         """Returns the nearest color from the palette."""
         nearest_color_name = self.get_default_color()
         color = to_rgb(color_str)
-        if (casing_color_str is not None and len(casing_color_str) != 0):
+        if casing_color_str is not None and len(casing_color_str) != 0:
             color = blend_colors(color, to_rgb(casing_color_str), 0.5)
         min_diff = None
 

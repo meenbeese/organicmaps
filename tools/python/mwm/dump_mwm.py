@@ -1,7 +1,7 @@
 import json
 
-from mwm import EnumAsStrEncoder
-from mwm import Mwm
+from tools.python.mwm import EnumAsStrEncoder
+from tools.python.mwm import Mwm
 
 
 def dump_mwm(path, format, need_features):
@@ -16,6 +16,4 @@ def dump_mwm(path, format, need_features):
             if format == "str":
                 print(ft)
             elif format == "json":
-                print(
-                    json.dumps(ft.to_json(), ensure_ascii=False, cls=EnumAsStrEncoder)
-                )
+                print(json.dumps(ft.to_json(), ensure_ascii=False, cls=EnumAsStrEncoder))

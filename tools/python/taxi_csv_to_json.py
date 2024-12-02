@@ -55,7 +55,7 @@ def convert(src_path, dst_path):
         "disabled": {"countries": [], "mwms": []}
     }
 
-    for country, cities in countries.iteritems():
+    for country, cities in countries.items():
         result["enabled"]["countries"].append({
             "id": country,
             "cities": cities

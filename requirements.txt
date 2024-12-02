@@ -19,7 +19,6 @@ omim-mwm~=10.3.0rc2
 omim-data-essential~=10.3.0rc2
 omim-data-files~=10.3.0rc2
 omim-pygen~=10.3.0rc2
-mwm~=0.10.1
 beautifulsoup4~=4.13.0b2
 requests-file~=2.1.0
 filelock~=3.16.0

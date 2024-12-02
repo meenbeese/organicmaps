@@ -100,11 +100,7 @@ def progress_bar(total, progress):
     progress = progress / total
     block = int(round(bar_length * progress))
     progress_bar_str = '#' * block + '-' * (bar_length - block)
-    text = '\r[{progress_bar}] {percent:.0f}% {item}/{total}'.format(
-        progress_bar=progress_bar_str,
-        percent=round(progress * 100, 0),
-        item=initial_progress,
-        total=total)
+    text = f'\r[{progress_bar_str}] {round(progress * 100, 0):.0f}% {initial_progress}/{total}'
     sys.stderr.write(text)
     if progress == 1:
         sys.stderr.write('\n')

@@ -3,11 +3,9 @@ import os
 from abc import ABC
 from abc import abstractmethod
 from typing import Dict
-from typing import Iterable
 from typing import List
 from typing import Union
 from collections.abc import Iterable
-from collections.abc import AB
 
 from feature_types import readable_type
 

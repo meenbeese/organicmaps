@@ -7,16 +7,16 @@ from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.utils.dates import days_ago
 
-from airmaps.instruments import settings
-from airmaps.instruments import storage
-from airmaps.instruments.utils import get_latest_filename
-from airmaps.instruments.utils import make_rm_build_task
-from airmaps.instruments.utils import put_current_date_in_filename
-from airmaps.instruments.utils import rm_build
-from maps_generator.generator import stages_declaration as sd
-from maps_generator.generator.env import Env
-from maps_generator.generator.env import WORLD_COASTS_NAME
-from maps_generator.maps_generator import run_generation
+from tools.python.airmaps.instruments import settings
+from tools.python.airmaps.instruments import storage
+from tools.python.airmaps.instruments.utils import get_latest_filename
+from tools.python.airmaps.instruments.utils import make_rm_build_task
+from tools.python.airmaps.instruments.utils import put_current_date_in_filename
+from tools.python.airmaps.instruments.utils import rm_build
+from tools.python.maps_generator.generator import stages_declaration as sd
+from tools.python.maps_generator.generator.env import Env
+from tools.python.maps_generator.generator.env import WORLD_COASTS_NAME
+from tools.python.maps_generator.maps_generator import run_generation
 
 logger = logging.getLogger("airmaps")
 

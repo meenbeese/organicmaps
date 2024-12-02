@@ -5,8 +5,8 @@ import re
 import sys
 from multiprocessing import Pool
 
-from mwm import Mwm
-from mwm.ft2osm import read_osm2ft
+from tools.python.mwm import Mwm
+from tools.python.mwm.ft2osm import read_osm2ft
 
 
 class PromoIds(object):

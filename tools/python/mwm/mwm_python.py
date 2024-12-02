@@ -11,8 +11,8 @@ from typing import Union
 
 import math
 
-from mwm import mwm_interface as mi
-from mwm.exceptions import FeaturesSectionParseError
+from tools.python.mwm import mwm_interface as mi
+from tools.python.mwm.exceptions import FeaturesSectionParseError
 
 logger = logging.getLogger(__name__)
 

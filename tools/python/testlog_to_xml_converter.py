@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-'''
+"""
 This script generates jUnit-style xml files from the log written by our tests.
 This xml file is used in Jenkins to show the state of the test execution.
 
 Created on May 13, 2015
 
 @author: t.danshin
-'''
+"""
 
 import sys
 import xml.etree.ElementTree as ElementTree
@@ -201,7 +201,7 @@ class Parser:
 
     def append_to_comment(self, line):
         if self.test_info:
-            if line == "All tests passed." or re.match("\d{1,} tests failed", line, re.IGNORECASE):
+            if line == "All tests passed." or re.match("\d+ tests failed", line, re.IGNORECASE):
                 self.var_should_pass = True
                 return False
             line = REPLACE_CHARS_RE.sub("_", line)

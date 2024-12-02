@@ -116,7 +116,7 @@ class ResponseProvider:
 
     def strip_query(self, url):
         query_start = url.find("?")
-        if (query_start > 0):
+        if query_start > 0:
             return url[:query_start]
         return url
 

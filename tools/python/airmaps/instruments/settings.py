@@ -1,7 +1,7 @@
 import sys
 from typing import AnyStr
 
-from maps_generator.generator import settings
+from tools.python.maps_generator.generator import settings
 
 STORAGE_PREFIX = ""
 

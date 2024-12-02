@@ -2,7 +2,7 @@ import logging
 import os
 import timeit
 
-import mwm
+from tools.python import mwm
 
 logger = logging.getLogger("mwm")
 logger.setLevel(logging.ERROR)

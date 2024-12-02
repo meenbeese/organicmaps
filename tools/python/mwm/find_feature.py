@@ -1,10 +1,10 @@
 import json
 from typing import List
 
-from mwm import EnumAsStrEncoder
-from mwm import Feature
-from mwm import Mwm
-from mwm import readable_type
+from tools.python.mwm import EnumAsStrEncoder
+from tools.python.mwm import Feature
+from tools.python.mwm import Mwm
+from tools.python.mwm import readable_type
 
 
 def find_features(path: str, typ: str, string: str) -> List[Feature]:
