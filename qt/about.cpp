@@ -1,67 +1,41 @@
-#include "qt/about.hpp"
-
+#include "about_dialog_ui.h"
 #include "platform/platform.hpp"
 
 #include "base/logging.hpp"
 
-#include <string>
+#include <sstream>
+#include <fstream>
 
-#include <QtCore/QFile>
-#include <QtGui/QIcon>
-#include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QMenuBar>
-#include <QtWidgets/QTextBrowser>
-#include <QtWidgets/QVBoxLayout>
+class AboutDialog {
+public:
+    explicit AboutDialog() {
+        m_ui = AboutDialogUI::create();
 
-AboutDialog::AboutDialog(QWidget * parent)
-  : QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint)
-{
-  QIcon icon(":/ui/logo.png");
-  setWindowIcon(icon);
-  setWindowTitle(QMenuBar::tr("About"));
+        auto &platform = GetPlatform();
+        m_ui->set_app_name(QCoreApplication::applicationName().toStdString());
+        m_ui->set_version(platform.Version());
 
-  QLabel * labelIcon = new QLabel();
-  labelIcon->setPixmap(icon.pixmap(128));
+        std::string aboutText;
+        try {
+            ReaderPtr<Reader> reader = platform.GetReader("copyright.html");
+            reader.ReadAsString(aboutText);
+        } catch (RootException const &ex) {
+            LOG(LWARNING, ("About text error: ", ex.Msg()));
+            aboutText = "Error loading about text.";
+        }
+        m_ui->set_about_text(aboutText);
 
-  Platform & platform = GetPlatform();
+        m_ui->on_close([&]() { close(); });
+    }
 
-  QVBoxLayout * versionBox = new QVBoxLayout();
-  versionBox->addWidget(new QLabel(QCoreApplication::applicationName()));
-  QLabel * versionLabel = new QLabel("Version: " + QString::fromStdString(platform.Version()));
-  versionLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
-  versionBox->addWidget(versionLabel);
-  // TODO: insert maps data version.
-  //versionBox->addWidget(new QLabel(QString("Data: ") + DESIGNER_DATA_VERSION));
+    void show() {
+        m_ui->show();
+    }
 
-  QHBoxLayout * hBox = new QHBoxLayout();
-  hBox->addWidget(labelIcon);
-  hBox->addLayout(versionBox);
+    void close() {
+        m_ui->hide();
+    }
 
-  std::string aboutText;
-  try
-  {
-    ReaderPtr<Reader> reader = platform.GetReader("copyright.html");
-    reader.ReadAsString(aboutText);
-  }
-  catch (RootException const & ex)
-  {
-    LOG(LWARNING, ("About text error: ", ex.Msg()));
-  }
-
-  if (!aboutText.empty())
-  {
-    QTextBrowser * aboutTextBrowser = new QTextBrowser();
-    aboutTextBrowser->setReadOnly(true);
-    aboutTextBrowser->setOpenLinks(true);
-    aboutTextBrowser->setOpenExternalLinks(true);
-    aboutTextBrowser->setText(aboutText.c_str());
-
-    QVBoxLayout * vBox = new QVBoxLayout();
-    vBox->addLayout(hBox);
-    vBox->addWidget(aboutTextBrowser);
-    setLayout(vBox);
-  }
-  else
-    setLayout(hBox);
-}
+private:
+    std::shared_ptr<AboutDialogUI> m_ui;
+};

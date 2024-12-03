@@ -1,0 +1,55 @@
+export component AboutDialog {
+    in string app_name <=> set_app_name;
+    in string version <=> set_version;
+    in string about_text <=> set_about_text;
+
+    callback on_close();
+
+    Modal {
+        width: 400px;
+        height: auto;
+        background: color("#f7f7f7");
+        border-radius: 8px;
+
+        VerticalLayout {
+            spacing: 16px;
+            padding: 24px;
+
+            HorizontalLayout {
+                spacing: 16px;
+
+                Image {
+                    source: @image-url("logo.png");
+                    width: 128px;
+                    height: 128px;
+                }
+
+                VerticalLayout {
+                    Text {
+                        text: app_name;
+                        font-size: 20px;
+                        font-weight: bold;
+                    }
+                    Text {
+                        text: "Version: " + version;
+                        font-size: 14px;
+                    }
+                }
+            }
+
+            Text {
+                text: about_text;
+                wrap: true;
+                font-size: 14px;
+                horizontal-alignment: left;
+                vertical-alignment: top;
+            }
+
+            Button {
+                text: "Close";
+                clicked => on_close();
+                horizontal-alignment: center;
+            }
+        }
+    }
+}
