@@ -103,17 +103,13 @@ sudo apt update && sudo apt install -y \
     cmake \
     ninja-build \
     python3 \
-    qt6-base-dev \
-    qt6-positioning-dev \
     libc++-dev \
     libfreetype-dev \
     libglvnd-dev \
     libgl1-mesa-dev \
     libharfbuzz-dev \
     libicu-dev \
-    libqt6svg6-dev \
-    libqt6positioning6-plugins \
-    libqt6positioning6 \
+    libslint-dev \
     libsqlite3-dev \
     zlib1g-dev
 ```

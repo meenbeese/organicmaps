@@ -84,13 +84,9 @@ jobs:
               ninja-build \
               libgl1-mesa-dev \
               libglvnd-dev \
-              qt6-base-dev \
               libfreetype-dev \
               libharfbuzz-dev \
-              libqt6svg6-dev \
-              qt6-positioning-dev \
-              libqt6positioning6-plugins \
-              libqt6positioning6 \
+              libslint-dev \
               llvm \
               gcovr
 
