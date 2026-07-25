@@ -1,9 +1,11 @@
 #include "qt/qt_common/map_widget.hpp"
 
 #include "qt/qt_common/helpers.hpp"
-#include "qt/qt_common/scale_slider.hpp"
+#include "qt/qt_common/zoom_widget.hpp"
 
 #include "map/framework.hpp"
+
+#include "indexer/scales.hpp"
 
 #include "routing/maxspeeds.hpp"
 
@@ -11,6 +13,7 @@
 
 #include "base/assert.hpp"
 
+#include <cmath>
 #include <functional>
 #include <string>
 
@@ -38,8 +41,6 @@ MapWidget::MapWidget(Framework & framework, bool isScreenshotMode, QWidget * par
   : QOpenGLWidget(parent)
   , m_framework(framework)
   , m_screenshotMode(isScreenshotMode)
-  , m_slider(nullptr)
-  , m_sliderState(SliderState::Released)
   , m_ratio(1.0f)
   , m_contextFactory(nullptr)
 {
@@ -50,6 +51,18 @@ MapWidget::MapWidget(Framework & framework, bool isScreenshotMode, QWidget * par
   m_updateTimer->setSingleShot(false);
   m_updateTimer->start(1000 / 60);
   setAttribute(Qt::WA_AcceptTouchEvents);
+
+  m_zoomWidget = new ZoomWidget(this);
+  connect(m_zoomWidget, &ZoomWidget::ZoomIn, this, &MapWidget::ScalePlus);
+  connect(m_zoomWidget, &ZoomWidget::ZoomOut, this, &MapWidget::ScaleMinus);
+  connect(m_zoomWidget, &ZoomWidget::ZoomToLevel, this, [this](int level)
+  {
+    int const current = m_framework.GetDrawScale();
+    if (current == level)
+      return;
+    double const factor = pow(2.0, level - current);
+    m_framework.Scale(factor, true);
+  });
 }
 
 MapWidget::~MapWidget()
@@ -91,15 +104,6 @@ void MapWidget::BindHotkeys(QWidget & parent)
     connect(action.get(), SIGNAL(triggered()), this, hotkey.m_slot);
     parent.addAction(action.release());
   }
-}
-
-void MapWidget::BindSlider(ScaleSlider & slider)
-{
-  m_slider = &slider;
-
-  connect(m_slider, &QAbstractSlider::actionTriggered, this, &MapWidget::ScaleChanged);
-  connect(m_slider, &QAbstractSlider::sliderPressed, this, &MapWidget::SliderPressed);
-  connect(m_slider, &QAbstractSlider::sliderReleased, this, &MapWidget::SliderReleased);
 }
 
 void MapWidget::CreateEngine()
@@ -197,29 +201,6 @@ void MapWidget::AntialiasingOff()
     engine->SetPosteffectEnabled(df::PostprocessRenderer::Antialiasing, false);
 }
 
-void MapWidget::ScaleChanged(int action)
-{
-  if (!m_slider)
-    return;
-
-  if (action == QAbstractSlider::SliderNoAction)
-    return;
-
-  double const factor = m_slider->GetScaleFactor();
-  if (factor != 1.0)
-    m_framework.Scale(factor, false);
-}
-
-void MapWidget::SliderPressed()
-{
-  m_sliderState = SliderState::Pressed;
-}
-
-void MapWidget::SliderReleased()
-{
-  m_sliderState = SliderState::Released;
-}
-
 m2::PointD MapWidget::GetDevicePoint(QMouseEvent * e) const
 {
   return m2::PointD(L2D(e->position().x()), L2D(e->position().y()));
@@ -263,9 +244,11 @@ void MapWidget::OnViewportChanged(ScreenBase const & screen)
 
 void MapWidget::UpdateScaleControl()
 {
-  if (!m_slider || m_sliderState == SliderState::Pressed)
-    return;
-  m_slider->SetPosWithBlockedSignals(m_framework.GetDrawScale());
+  if (m_zoomWidget)
+  {
+    int const scale = m_framework.GetDrawScale();
+    m_zoomWidget->SetZoomLevel(scale, 2, scales::GetUpperScale());
+  }
 }
 
 void MapWidget::Build()
@@ -471,6 +454,12 @@ void MapWidget::resizeGL(int width, int height)
     m_skin->ForEach([&layout](gui::EWidget w, gui::Position const & pos) { layout[w] = pos.m_pixelPivot; });
 
     m_framework.SetWidgetLayout(std::move(layout));
+  }
+
+  if (m_zoomWidget)
+  {
+    int const margin = 12;
+    m_zoomWidget->move(width - m_zoomWidget->width() - margin, height - m_zoomWidget->height() - margin);
   }
 }
 

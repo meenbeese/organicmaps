@@ -22,10 +22,6 @@ class Framework;
 
 namespace qt
 {
-namespace common
-{
-class ScaleSlider;
-}
 
 class Screenshoter;
 struct ScreenshotParams;

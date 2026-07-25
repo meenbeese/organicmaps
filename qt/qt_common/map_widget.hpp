@@ -22,7 +22,7 @@ class QOpenGLBuffer;
 
 namespace qt::common
 {
-class ScaleSlider;
+class ZoomWidget;
 
 class MapWidget : public QOpenGLWidget
 {
@@ -33,7 +33,6 @@ public:
   ~MapWidget() override;
 
   void BindHotkeys(QWidget & parent);
-  void BindSlider(ScaleSlider & slider);
   void CreateEngine();
   void grabGestures(QList<Qt::GestureType> const & gestures);
 
@@ -54,10 +53,6 @@ public slots:
   void MoveDown();
   void MoveDownSmooth();
 
-  void ScaleChanged(int action);
-  void SliderPressed();
-  void SliderReleased();
-
   void AntialiasingOn();
   void AntialiasingOff();
 
@@ -65,12 +60,6 @@ public:
   Q_SIGNAL void BeforeEngineCreation();
 
 protected:
-  enum class SliderState
-  {
-    Pressed,
-    Released
-  };
-
   int L2D(int px) const { return px * m_ratio; }
   m2::PointD GetDevicePoint(QMouseEvent * e) const;
   df::Touch GetDfTouchFromQMouseEvent(QMouseEvent * e) const;
@@ -96,14 +85,13 @@ protected:
 
   Framework & m_framework;
   bool m_screenshotMode;
-  ScaleSlider * m_slider;
-  SliderState m_sliderState;
 
   float m_ratio;
   drape_ptr<QtOGLContextFactory> m_contextFactory;
   std::unique_ptr<gui::Skin> m_skin;
 
   std::unique_ptr<QTimer> m_updateTimer;
+  ZoomWidget * m_zoomWidget = nullptr;
 
   std::unique_ptr<QOpenGLShaderProgram> m_program;
   std::unique_ptr<QOpenGLVertexArrayObject> m_vao;

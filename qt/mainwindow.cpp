@@ -9,7 +9,6 @@
 #include "qt/popup_menu_holder.hpp"
 #include "qt/preferences_dialog.hpp"
 #include "qt/qt_common/helpers.hpp"
-#include "qt/qt_common/scale_slider.hpp"
 #include "qt/qt_common/toolbar_icons.hpp"
 #include "qt/routing_settings_dialog.hpp"
 #include "qt/screenshoter.hpp"
@@ -442,9 +441,6 @@ void MainWindow::CreateNavigationBar()
     m_pBuildPhonePackAction->setToolTip(tr("Build phone package"));
 #endif  // BUILD_DESIGNER
   }
-
-  pToolBar->addSeparator();
-  qt::common::ScaleSlider::Embed(Qt::Vertical, *pToolBar, *m_pDrawWidget);
 
 #ifndef NO_DOWNLOADER
   pToolBar->addSeparator();

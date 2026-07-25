@@ -8,7 +8,6 @@
 #include "samples_view.hpp"
 
 #include "qt/qt_common/map_widget.hpp"
-#include "qt/qt_common/scale_slider.hpp"
 
 #include "map/framework.hpp"
 #include "map/place_page_info.hpp"
@@ -322,7 +321,6 @@ void MainView::InitMapWidget()
     auto * toolBar = new QToolBar(widget /* parent */);
     toolBar->setOrientation(Qt::Vertical);
     toolBar->setIconSize(QSize(32, 32));
-    qt::common::ScaleSlider::Embed(Qt::Vertical, *toolBar, *mapWidget);
 
     layout->addWidget(mapWidget);
     layout->addWidget(toolBar);

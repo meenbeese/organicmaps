@@ -15,14 +15,14 @@ set(SRC
   qtoglcontext.hpp
   qtoglcontextfactory.cpp
   qtoglcontextfactory.hpp
-  scale_slider.cpp
-  scale_slider.hpp
   spinner.cpp
   spinner.hpp
   text_dialog.cpp
   text_dialog.hpp
   toolbar_icons.cpp
   toolbar_icons.hpp
+  zoom_widget.cpp
+  zoom_widget.hpp
 )
 
 omim_add_library(${PROJECT_NAME} ${SRC} ${RESOURCES})
