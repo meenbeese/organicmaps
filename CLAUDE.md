@@ -14,7 +14,7 @@ Libraries in `libs/` are strictly layered -- no circular or upward dependencies 
 4. **Domain:** `search`, `routing`, `storage` (map downloads), `traffic`
 5. **Rendering:** `drape` (OpenGL/Vulkan/Metal abstraction), `drape_frontend` (scene management), `shaders`
 6. **Application:** `map` (Framework class -- aggregates all subsystems)
-7. **UI:** in the project's root: `qt/` (desktop), `iphone/` (iOS), `android/` (Android), `dev_sandbox/` (graphics dev tool)
+7. **UI:** in the project's root: `qt/` (desktop), `iphone/` (iOS), `android/` (Android), `dev_sandbox/` (graphics dev tool; app shell in Rust)
 
 Key namespaces: `m2::` (2D geometry, e.g. `m2::PointD`, `m2::RectD`), `ms::LatLon` (WGS84), `mercator::` (coordinate conversion), `search::`, `routing::`, `storage::`, `kml::`
 
@@ -115,7 +115,7 @@ ctest -j --test-dir build-$YOUR_NAME --stop-on-failure --output-on-failure -R te
 ### Common build targets
 - `desktop` -- Qt desktop app
 - `generator_tool` -- map generation CLI
-- `dev_sandbox` -- developer graphics engine debugging tool
+- `dev_sandbox` -- developer graphics engine debugging tool (Rust shell + C++ shim)
 - `<lib>_tests` -- test binary for a library (e.g., `base_tests`, `search_tests`, `routing_tests`)
 - `skin_generator_tool`, `track_generator_tool`, `topography_generator_tool` -- auxiliary tools
 

@@ -1,9 +1,39 @@
 project(dev_sandbox)
 
+# ---------------------------------------------------------------------------
+# Rust shell. Built as a static library, then linked into the final executable
+# together with the C++ core (drape, map, generator, ...).
+# ---------------------------------------------------------------------------
+find_program(CARGO cargo REQUIRED)
+
+set(RUST_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/rust_target)
+set(RUST_PROFILE debug)
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+  set(RUST_PROFILE release)
+endif()
+
+set(RUST_STATIC_LIB ${RUST_BUILD_DIR}/${RUST_PROFILE}/libdev_sandbox_rust.a)
+
+file(GLOB_RECURSE RUST_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.rs)
+list(APPEND RUST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Cargo.toml)
+
+add_custom_command(
+  OUTPUT ${RUST_STATIC_LIB}
+  COMMAND ${CMAKE_COMMAND} -E env CARGO_TARGET_DIR=${RUST_BUILD_DIR} cargo build
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  DEPENDS ${RUST_SOURCES}
+  COMMENT "Building Rust dev_sandbox shell"
+  VERBATIM
+)
+
+add_custom_target(dev_sandbox_rust ALL DEPENDS ${RUST_STATIC_LIB})
+
+# ---------------------------------------------------------------------------
+# C ABI shim + per-platform graphics context factories (stay in C++ because
+# they must match drape's context lifecycle expectations exactly).
+# ---------------------------------------------------------------------------
 set(SRC
-  main.cpp
-  imgui_renderer.cpp
-  imgui_renderer.hpp
+  cshim/c_api.cpp
 )
 
 if (PLATFORM_MAC)
@@ -49,7 +79,7 @@ if (PLATFORM_MAC)
   enable_language(Metal)
 
   append(SRC
-    main.mm
+    cshim/context_macos.mm
     ../iphone/Maps/Core/MapRendering/MetalContextFactory.h
     ../iphone/Maps/Core/MapRendering/MetalContextFactory.mm
   )
@@ -62,26 +92,27 @@ endif()
 
 if (${PLATFORM_LINUX})
   append(SRC
-    main_linux.cpp
+    cshim/context_linux.cpp
   )
 endif()
 
 if (PLATFORM_WIN)
   append(SRC
-    main_windows.cpp
+    cshim/context_windows.cpp
   )
 endif()
 
 omim_add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${SRC})
 
+add_dependencies(${PROJECT_NAME} dev_sandbox_rust)
+
 target_link_libraries(${PROJECT_NAME}
   PRIVATE
+    ${RUST_STATIC_LIB}
     drape
     generator  # For borders::LoadBorders
     map
     gflags::gflags
-    glfw
-    imgui
     vulkan_wrapper
 )
 
@@ -120,8 +151,25 @@ if (PLATFORM_LINUX)
   target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::EGL PkgConfig::WAYLAND_EGL)
 endif()
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${OMIM_ROOT}/3party/glfw/include)
-target_include_directories(${PROJECT_NAME} PUBLIC ${OMIM_ROOT}/3party/imgui)
+# The Rust shell builds its own GLFW (bundled with glfw-sys). Point the C++
+# side at the same bundled headers so both sides agree on the GLFWwindow type
+# and ABI; the GLFW object files come from the Rust static library.
+execute_process(
+  COMMAND ${CARGO} metadata --format-version 1
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  RESULT_VARIABLE GLFW_SYS_METADATA_RESULT
+  OUTPUT_VARIABLE GLFW_SYS_METADATA
+)
+if (NOT GLFW_SYS_METADATA_RESULT EQUAL 0)
+  message(FATAL_ERROR "cargo metadata failed while locating glfw-sys headers")
+endif()
+string(REGEX MATCH "\"manifest_path\":\"[^\"]*glfw-sys[^\"]*\"" GLFW_SYS_MANIFEST_JSON "${GLFW_SYS_METADATA}")
+if (NOT GLFW_SYS_MANIFEST_JSON)
+  message(FATAL_ERROR "glfw-sys is not in the cargo dependency graph")
+endif()
+string(REGEX REPLACE ".*manifest_path\":\"([^\"]*)\".*" "\\1" GLFW_SYS_MANIFEST "${GLFW_SYS_MANIFEST_JSON}")
+get_filename_component(GLFW_SYS_CRATE_DIR "${GLFW_SYS_MANIFEST}" DIRECTORY)
+target_include_directories(${PROJECT_NAME} PUBLIC ${GLFW_SYS_CRATE_DIR}/glfw/include)
 
 set(BUNDLE_NAME "OMapsDevSandbox")
 set(BUNDLE_DISPLAY_NAME "Organic Maps: Developer Sandbox")

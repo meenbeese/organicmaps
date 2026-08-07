@@ -59,18 +59,10 @@
   path = 3party/utfcpp
   url = https://github.com/nemtrif/utfcpp.git
   branch = master
-[submodule "3party/glfw"]
-  path = 3party/glfw
-  url = https://github.com/glfw/glfw.git
-  branch = master
 [submodule "3party/CMake-MetalShaderSupport"]
   path = 3party/CMake-MetalShaderSupport
   url = https://github.com/dpogue/CMake-MetalShaderSupport.git
   branch = main
-[submodule "3party/imgui/imgui"]
-  path = 3party/imgui/imgui
-  url = https://github.com/ocornut/imgui
-  branch = master
 [submodule "3party/glaze"]
   path = 3party/glaze
   url = https://github.com/stephenberry/glaze

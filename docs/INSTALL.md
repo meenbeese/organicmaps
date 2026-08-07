@@ -13,6 +13,9 @@ To build and run Organic Maps you'll need a machine with at least 4Gb of RAM and
 
 For _Windows_ you need to have [Git for Windows](https://git-scm.com/download/win) installed and Git bash available in the PATH.
 
+The `dev_sandbox` tool requires the Rust toolchain (`rustup`/`cargo`); CMake
+invokes `cargo` to build its shell as a static library on all desktop platforms.
+
 ## Getting sources
 
 First of all get the source code. The full Organic Maps sources repository is ~10Gb in size, there are various [clone options](#special-cases-options) to reduce the download size to suit your needs.
@@ -258,13 +261,19 @@ presets include `relwithdebinfo`, `debug-no-unity` (disables Unity batching for
 lower peak memory), `coverage`, and `xcode` (macOS only; generates an Xcode
 project, needed for `dev_sandbox` and Metal shader development).
 
+The `dev_sandbox` app shell is written in Rust: windowing and UI come from the
+Rust crates `glfw` and `imgui` (replacing the vendored C++ `3party/glfw` and
+`3party/imgui`), and a small C shim (`dev_sandbox/cshim/`) bridges to the C++
+core. The GLFW headers used by the shim are taken from the Rust `glfw-sys` crate
+so Rust and C++ share one GLFW instance.
+
 On macOS `dev_sandbox` also needs Xcode's separately downloaded Metal toolchain.
 Install it with `xcodebuild -downloadComponent MetalToolchain`, otherwise CMake
 skips the target with a warning and the rest of the build proceeds as usual.
 
-On Linux `dev_sandbox` requires a Wayland session: it builds GLFW with only the
-Wayland backend and hard-requires Wayland at runtime, so it will not start on an
-X11 or XWayland session.
+On Linux `dev_sandbox` requires a Wayland session: the `glfw` crate builds GLFW
+with only the Wayland backend and hard-requires Wayland at runtime, so it will
+not start on an X11 or XWayland session.
 
 Besides _desktop_ there are other targets like _generator_tool_; pass them to
 `--target`, or omit `--target` to build everything.

@@ -1,0 +1,13 @@
+[package]
+name = "dev_sandbox"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+name = "dev_sandbox_rust"
+crate-type = ["staticlib"]
+
+[dependencies]
+glfw = { version = "0.62.0", default-features = false, features = ["wayland", "raw-window-handle-v0-6"] }
+imgui = "0.12.0"
